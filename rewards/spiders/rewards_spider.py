@@ -28,7 +28,7 @@ class QuotesSpider(scrapy.Spider):
                 data = str(line).replace("\n", "").strip()
                 # data = json.loads(data_json.strip())
                 logging.debug("Code:" + str(data))
-                arr = data.split(";")
+                arr = data.split("|")
                 values = (arr[0], arr[1], arr[2], arr[3])
                 self.connect_mysql.insert_value(values)
 
@@ -47,7 +47,7 @@ class QuotesSpider(scrapy.Spider):
                     image = str(self.domains + "/" + str(row.xpath('td[1]//a//img/@src').extract_first()))
                     desc = str(row.xpath('td[2]//node()').extract_first())
                     price = str(row.xpath('td[3]//text()').extract_first()).replace('BP', '').strip()
-                    line = code + ";" + image + ";" + desc + ";" + price
+                    line = code + "|" + image + "|" + desc + "|" + price
                 self.new_file.writeFile(line)
 
     def __del__(self):
