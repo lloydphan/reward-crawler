@@ -16,4 +16,5 @@ scrapy crawl rewards
 
 6- install MySQL connector for Python:
 https://dev.mysql.com/get/Downloads/Connector-Python/mysql-connector-python-8.0.22-macos10.15.dmg
-
+and type: <br/>
+pip install mysql-connector-python

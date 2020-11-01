@@ -25,6 +25,10 @@ class File:
         with open(self.file_name, "r") as reader:
             return reader.read()
 
+    def readLine(self):
+        with open(self.file_name, "r") as reader:
+            return reader.readline()
+
     def readLnsFile(self):
         with open(self.file_name, "r") as reader:
             return reader.readlines()

@@ -2,6 +2,8 @@ import scrapy
 import logging
 import os
 from rewards.file import File
+from rewards.sql import MySql
+import json
 
 
 class QuotesSpider(scrapy.Spider):
@@ -10,6 +12,9 @@ class QuotesSpider(scrapy.Spider):
     domains = "https://rewards.cimbbank.com.my"
     results_updated = "results_updated.txt"
     results = "results.txt"
+    new_file = None
+    update_file = None
+    connect_mysql = None
 
     def __init__(self, name=None, **kwargs):
         super().__init__(name, **kwargs)
@@ -18,32 +23,37 @@ class QuotesSpider(scrapy.Spider):
             self.new_file = File(self.results)
             self.new_file.openOrCreate()
         else:
-            logging.debug("Haha:" + str(self.update_file.readLnsFile()))
+            self.connect_mysql = MySql('localhost', 'root', '', 'rewards')
+            for line in self.update_file.readLnsFile():
+                data = str(line).replace("\n", "").strip()
+                # data = json.loads(data_json.strip())
+                logging.debug("Code:" + str(data))
+                arr = data.split(";")
+                values = (arr[0], arr[1], arr[2], arr[3])
+                self.connect_mysql.insert_value(values)
 
     def start_requests(self):
-        logging.debug("bbb" + str(self.update_file))
-        if self.new_file:
-            logging.debug(self.update_file)
+        if self.new_file is not None:
             str_exp = 'https://rewards.cimbbank.com.my/index.php?ch=cb_rwd&pg=cb_rwd_itms&nhmxl5=10&stmxl5='
             urls = self.getArrayUrls(self.total_record, str_exp)
             for url in urls:
                 yield scrapy.Request(url=url, callback=self.parse)
 
     def parse(self, response):
-        if self.new_file:
+        if self.new_file is not None:
             for row in response.xpath('//tr[has-class("ctlgLine")]')[1:]:
                 code = str(row.xpath('td[1]//text()').extract_first()).strip()
                 if self.isNotBlank(code):
                     image = str(self.domains + "/" + str(row.xpath('td[1]//a//img/@src').extract_first()))
                     desc = str(row.xpath('td[2]//node()').extract_first())
                     price = str(row.xpath('td[3]//text()').extract_first()).replace('BP', '').strip()
-                    line = "code:" + code + ";image:" + image + ";desc:" + desc + ";price:" + price
+                    line = code + ";" + image + ";" + desc + ";" + price
                 self.new_file.writeFile(line)
 
     def __del__(self):
-        if self.new_file:
+        if self.new_file is not None:
             self.new_file.rename(self.results, self.results_updated)
-            logging.debug("Ket thuc")
+            logging.debug("Change name")
 
     def getArrayUrls(self, total_record, str_exp):
         urls = []
