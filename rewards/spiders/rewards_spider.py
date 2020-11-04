@@ -46,7 +46,7 @@ class QuotesSpider(scrapy.Spider):
                 if self.isNotBlank(code):
                     image = str(self.domains + "/" + str(row.xpath('td[1]//a//img/@src').extract_first()))
                     desc = str(row.xpath('td[2]//node()').extract_first())
-                    price = str(row.xpath('td[3]//text()').extract_first()).replace('BP', '').strip()
+                    price = str(row.xpath('td[3]//text()').extract_first()).replace('BP', '').replace(',','').strip()
                     line = code + "|" + image + "|" + desc + "|" + price
                 self.new_file.writeFile(line)
 
